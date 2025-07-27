@@ -36,3 +36,11 @@ Buchungsdatum;Wertstellung;Betrag(EUR);Saldo(EUR);Verwendungszweck
 Buchungsdatum;Wertstellung;Betrag;Saldo;Empfänger;TransferID;IBAN;BIC;Verwendungszweck;EREF;MREF;CRED
 01.01.2025;01.01.2025;10,00;100,00;Testfirma;12345678901ABCDEFG;DE1234;ABC123;Sonderzahlung wegen sonstwas;001234;09876;123-456-789
 ```
+
+## Disclaimer
+
+Menschen machen Fehler (traurig, aber wahr). Daher wird dieser Code ohne jegliche Haftung oder Gewährleistung zur Verfügung gestellt (siehe Lizenz). Bitte besonders die Ziel-Datei auf Fehler prüfen.
+Wer Fehler findet, darf sie behalten oder gerne ein Issue erstellen.
+
+Humans make mistakes. Due to that the code is provided as is without any warrenty (see license). Especially please check the resulting CSV file for errors.
+If you find any errors, please report an issue.
