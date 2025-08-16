@@ -5,6 +5,7 @@ import re
 import argparse
 import os
 import sys
+from pathlib import Path
 
 ######################
 # Constants
@@ -162,8 +163,12 @@ SOURCE_FILE = args.inputfile
 TARGET_FILE = args.outputfile
 
 # Cleanup target and tmp file
-os.remove(TARGET_FILE)
-os.remove(TMP_FILE)
+target_file = Path(TARGET_FILE)
+if target_file.is_file():
+  os.remove(TARGET_FILE)
+tmp_file = Path(TMP_FILE)
+if tmp_file.is_file():
+  os.remove(TMP_FILE)
 
 # Cleanup source file (remove useless garbage)
 with open(SOURCE_FILE,"r") as source_file:
