@@ -1,6 +1,6 @@
 # santander-csv-formater
 
-Important: This script works only for German accounts as fields are in German. But feel free to modify it for your needs :).
+Important: This script works only for German accounts as fields are in German. But feel free to modify it acording to your needs :).
 
 ## TL;DR
 

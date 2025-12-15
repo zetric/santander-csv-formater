@@ -19,11 +19,27 @@ TMP_FILE="_tmp.csv"
 ######################
 
 def receiver(row):
+  # Is a debit
   data = re.findall(r'(?:.*VON |AN )(.*)(?: \b[0-9]{11}[A-Z]{7}\b IBAN)', row)
   if data:
     return(data[0])
   else:
-    return("")
+    # Is a cash transfer (Santander bank does not output the target IBAN afterwards for wahtever reasons)
+    data = re.findall(r'(?:.*ZAHLUNG AN )(.*)(?: \b[A-Z]{2} VOM)', row)
+    if data:
+      return(data[0])
+    else:
+      # Is a dividend and the target is your own account
+      data = re.findall(r'(?:.*ISIN )(.*)', row)
+      if data:
+        return(OWNER)
+      else:
+        # Is cache
+        data = re.findall(r'(?:.*BARGELDAUSZAHLUNG )(.*)', row)
+        if data:
+          return(OWNER)
+        else:
+          return("")
 
 def transfer_id(row):
   data = re.findall(r'(?:.*)(\b[0-9]{11}[A-Z]{7}\b)(?: IBAN)', row)
@@ -51,7 +67,22 @@ def purpose(row):
   if data:
     return(data[0])
   else:
-    return("")
+    # Is a cash transfer (Santander bank does not output the target IBAN afterwards for wahtever reasons)
+    data = re.findall(r'(?:.*ZAHLUNG AN.*\b[A-Z]{2} )(VOM.*)', row)
+    if data:
+      return("ZAHLUNG " + data[0])
+    else:
+      # Is a dividend and the target is your own account
+      data = re.findall(r'(?:.*)(ISIN.*)', row)
+      if data:
+        return(data[0])
+      else:
+      # Is cache
+        data = re.findall(r'(?:.*)(BARGELDAUSZAHLUNG.*)', row)
+        if data:
+          return(data[0])
+        else:
+          return("")
   
 def eref(row):
   data = re.findall(r"EREF[+]([A-Za-z0-9+?\/\-:().,']*)", row)
@@ -157,10 +188,12 @@ if not len(sys.argv) > 1:
 parser = argparse.ArgumentParser(description="This script will convert raw CSV file exports from the Santander bank and convert it into a usable format (German field names).")
 parser.add_argument('-i', action="store", required=True, dest="inputfile", help="csv input file")
 parser.add_argument('-o', action="store", required=True, dest="outputfile", help="csv output file")
+parser.add_argument('-a', action="store", required=True, dest="accountowner", help="account owner")
 args = parser.parse_args()
 
 SOURCE_FILE = args.inputfile
 TARGET_FILE = args.outputfile
+OWNER = args.accountowner
 
 # Cleanup target and tmp file
 target_file = Path(TARGET_FILE)
@@ -171,11 +204,11 @@ if tmp_file.is_file():
   os.remove(TMP_FILE)
 
 # Cleanup source file (remove useless garbage)
-with open(SOURCE_FILE,"r") as source_file:
+with open(SOURCE_FILE,"r", newline='') as source_file:
   
   content = source_file.readlines()
     
-  with open(TMP_FILE, mode="a") as tmp_file:
+  with open(TMP_FILE, mode="a", newline='') as tmp_file:
     for row in content:
       if re.findall(r'[0-9]*', row.split('.')[0])[0] or row.find("Buchungsdatum") >= 0:
         tmp_file.write(row.rstrip() + "\n")
@@ -183,39 +216,40 @@ with open(SOURCE_FILE,"r") as source_file:
 
 
 # Start
-with open(TMP_FILE) as source_file:
+with open(TMP_FILE, newline='') as source_file:
   
   content = csv.DictReader(source_file, delimiter=';')
   
-  with open(TARGET_FILE, mode="a") as target_file:
+  with open(TARGET_FILE, mode="a", newline='') as target_file:
   
     writer = csv.DictWriter(target_file, fieldnames=TARGET_HEADER, delimiter=';')
     writer.writeheader()
   
     for row in content:
+
+      print(row)
   
       data_date = row['Buchungsdatum']
       data_valuta = row['Wertstellung']
       data_sum = row['Betrag(EUR)']
       data_position = row['Saldo(EUR)']
       data_purpose_raw = str(re.sub(r' +', ' ',row['Verwendungszweck'])).strip()
-
       
-      row_transfer = re.findall(r'VON|AN', data_purpose_raw)
-      if row_transfer:
-        data_transfer = transfer(data_purpose_raw)
-        target_row={'Buchungsdatum': data_date,
-                    'Wertstellung': data_valuta,
-                    'Betrag': data_sum,
-                    'Saldo': data_position,
-                    'Empfänger': data_transfer[0],
-                    'TransferID': data_transfer[1],
-                    'IBAN': data_transfer[2],
-                    'BIC': data_transfer[3],
-                    'Verwendungszweck': data_transfer[4],
-                    'EREF': data_transfer[5],
-                    'MREF': data_transfer[6],
-                    'CRED': data_transfer[7]}
+      # row_transfer = re.findall(r'VON|AN', data_purpose_raw)
+      # if row_transfer:
+      data_transfer = transfer(data_purpose_raw)
+      target_row={'Buchungsdatum': data_date,
+                  'Wertstellung': data_valuta,
+                  'Betrag': data_sum,
+                  'Saldo': data_position,
+                  'Empfänger': data_transfer[0],
+                  'TransferID': data_transfer[1],
+                  'IBAN': data_transfer[2],
+                  'BIC': data_transfer[3],
+                  'Verwendungszweck': data_transfer[4],
+                  'EREF': data_transfer[5],
+                  'MREF': data_transfer[6],
+                  'CRED': data_transfer[7]}
 
            
       writer.writerow(target_row)
