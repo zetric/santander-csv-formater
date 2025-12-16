@@ -43,7 +43,7 @@ Buchungsdatum;Wertstellung;Betrag;Saldo;Empfänger;TransferID;IBAN;BIC;Verwendun
 01.01.2025;01.01.2025;10,00;100,00;Testfirma;12345678901ABCDEFG;DE1234;ABC123;Sonderzahlung wegen sonstwas;001234;09876;123-456-789
 ```
 
-## Curently supported booking types
+## 👉 Curently supported booking types
 
 - Dividens starting with `ISIN`
 - Transfers starting with `ECHTZEIT-ÜBERWEISUNG` or  `ÜBERWEISUNG`
