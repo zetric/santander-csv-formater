@@ -34,7 +34,7 @@ def receiver(row):
       if data:
         return(OWNER)
       else:
-        # Is cache
+        # Is cash
         data = re.findall(r'(?:.*BARGELDAUSZAHLUNG )(.*)', row)
         if data:
           return(OWNER)
